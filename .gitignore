@@ -1,1 +1,3 @@
 .env
+__pycache__
+auto_given_roleID

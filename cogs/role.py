@@ -1,5 +1,6 @@
 import discord
 import os
+import sys
 from typing import Literal
 from discord import app_commands
 from discord.ext import commands
@@ -11,8 +12,7 @@ dotenv_path = join(dirname(__file__), '../.env')
 load_dotenv(dotenv_path)
 guild_id = int(os.environ.get("GUILD_ID"))
 
-# グローバル変数
-given_role:discord.Role # 与えられるロール
+cache = f'{os.getcwd()}/auto_given_roleID'
 
 # コマンドの本体
 class role(commands.Cog):
@@ -27,7 +27,7 @@ class role(commands.Cog):
         await self.bot.tree.sync(guild=self.guild)
 
     @app_commands.command(
-        name="tuccRole:role",
+        name="tucc-role",
         description="ユーザのロールを制御します"
     )
     @app_commands.guilds(guild_id)
@@ -48,13 +48,20 @@ class role(commands.Cog):
                 await ctx.response.send_message(f'{user.name} は {role.name} ロールを持っていません', ephemeral=True)
         # 新規参加者に自動で付与するロールを変更する
         elif option == 'auto':
-            global given_role
-            given_role = role
+            # キャッシュにロールIDを書き込む
+            with open(cache, mode='w') as f:
+                f.write(str(role.id))
             await ctx.response.send_message(f'新規参加者に自動で {role.name} ロールを付与します', ephemeral=True)
             
     @commands.Cog.listener()
     async def on_member_join(self, member:discord.Member):
-        await member.add_roles(given_role)
+        #try:
+            with open(cache, "r") as f:
+                given_role = self.guild.get_role(int(f.readline()))
+                await member.add_roles(given_role)
+        #except:
+            #print("自動付与ロールが読み込めませんでした")
+            #sys.stdout.flush()
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(
