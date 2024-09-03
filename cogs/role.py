@@ -55,13 +55,13 @@ class role(commands.Cog):
             
     @commands.Cog.listener()
     async def on_member_join(self, member:discord.Member):
-        #try:
+        try:
             with open(cache, "r") as f:
                 given_role = self.guild.get_role(int(f.readline()))
                 await member.add_roles(given_role)
-        #except:
-            #print("自動付与ロールが読み込めませんでした")
-            #sys.stdout.flush()
+        except:
+            print("自動付与ロールが読み込めませんでした")
+            sys.stdout.flush()
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(
